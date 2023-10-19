@@ -39,9 +39,23 @@ def canny_array(img, x, y, step, low_thresh):
         thresh = thresh + step
     return img_out
 
+
+def colored_threshold_overlay(img, overlay, thresh, colour):
+    img_out = img.copy()
+    for i in range(len(img)):
+        for j in range(len(img[i])):
+            print(overlay[i][j])
+            if overlay[i][j] > thresh:
+                img_out[i][j] = colour
+    return img_out
+
+
 if __name__ == '__main__':
     ebsd_scan = "images\\A.tif"
     sobel.sobel(ebsd_scan)
     ebsd_img = cv.imread(ebsd_scan, cv.IMREAD_COLOR)
     img_to_file.img_to_file(canny_array(ebsd_img, 3, 3, 3, 30), ebsd_scan, "matrix", "png")
-    canny.canny(ebsd_scan, 35)
+    ebsd_edges = canny.canny_img(ebsd_img, 36)
+    ebsd_edges = cv.cvtColor(ebsd_edges, cv.COLOR_BGR2GRAY)
+    ebsd_overlay = colored_threshold_overlay(ebsd_img, ebsd_edges, 127, [255, 0, 0])
+    img_to_file.img_to_file(ebsd_overlay, ebsd_scan, "overlay", "png")
