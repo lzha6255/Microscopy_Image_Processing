@@ -23,10 +23,15 @@ def canny_array(img, x, y, step, low_thresh):
             dst = canny.canny_img(img, thresh)
             row = cv.putText(dst, str(thresh), org, font, font_scale, color, thickness, cv.LINE_AA)
         for j in range(1, x):
-            thresh = thresh + step
-            dst = canny.canny_img(img, thresh)
-            labelled = cv.putText(dst, str(thresh), org, font, font_scale, color, thickness, cv.LINE_AA)
-            row = np.concatenate((row, labelled), axis=1)
+            if i == 0 and j == 1:
+                blur = cv.blur(img.copy(), (3, 3))
+                labelled = cv.putText(blur, "Blurred", org, font, font_scale, color, thickness, cv.LINE_AA)
+                row = np.concatenate((row, labelled), axis=1)
+            else:
+                thresh = thresh + step
+                dst = canny.canny_img(img, thresh)
+                labelled = cv.putText(dst, str(thresh), org, font, font_scale, color, thickness, cv.LINE_AA)
+                row = np.concatenate((row, labelled), axis=1)
         if i == 0:
             img_out = row
         else:
@@ -38,4 +43,5 @@ if __name__ == '__main__':
     ebsd_scan = "images\\A.tif"
     sobel.sobel(ebsd_scan)
     ebsd_img = cv.imread(ebsd_scan, cv.IMREAD_COLOR)
-    img_to_file.img_to_file(canny_array(ebsd_img, 4, 3, 5, 10), ebsd_scan, "matrix", "png")
+    img_to_file.img_to_file(canny_array(ebsd_img, 3, 3, 3, 30), ebsd_scan, "matrix", "png")
+    canny.canny(ebsd_scan, 35)
