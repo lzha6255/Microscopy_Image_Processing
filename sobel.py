@@ -1,5 +1,6 @@
-import sys
 import cv2 as cv
+
+import img_to_file
 
 
 def sobel(filename):
@@ -22,5 +23,4 @@ def sobel(filename):
 
     grad = cv.addWeighted(abs_grad_x, 0.5, abs_grad_y, 0.5, 0)
 
-    cv.imshow(window_name, grad)
-    cv.waitKey(0)
+    img_to_file.img_to_file(grad, filename, "sobel", "png")
