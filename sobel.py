@@ -24,3 +24,5 @@ def sobel(filename):
     grad = cv.addWeighted(abs_grad_x, 0.5, abs_grad_y, 0.5, 0)
 
     img_to_file.img_to_file(grad, filename, "sobel", "png")
+
+    return grad
