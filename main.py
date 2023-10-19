@@ -86,4 +86,6 @@ if __name__ == '__main__':
     ebsd_edges = cv.cvtColor(ebsd_edges, cv.COLOR_BGR2GRAY)
     ebsd_overlay = colored_threshold_overlay(ebsd_img, ebsd_edges, 127, [255, 0, 0])
     img_to_file.img_to_file(ebsd_overlay, ebsd_scan, "overlay", "png")
+    zoomed = ebsd_overlay[70:135, 70:150]
+    img_to_file.img_to_file(zoomed, ebsd_scan, "zoomed_overlay", "png")
     get_scale_length(ebsd_img_gray, 10)
