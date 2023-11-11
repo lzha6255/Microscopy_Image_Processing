@@ -4,6 +4,7 @@ import cv2 as cv
 import sobel
 import canny
 import img_to_file
+import find_melt_pool_boundaries
 
 
 def canny_array(img, x, y, step, low_thresh):
@@ -78,14 +79,17 @@ def get_scale_length(img, thresh):
 
 if __name__ == '__main__':
     ebsd_scan = "images\\A.tif"
-    sobel.sobel(ebsd_scan)
     ebsd_img = cv.imread(ebsd_scan, cv.IMREAD_COLOR)
     ebsd_img_gray = cv.cvtColor(ebsd_img, cv.COLOR_BGR2GRAY)
-    img_to_file.img_to_file(canny_array(ebsd_img, 3, 3, 3, 30), ebsd_scan, "matrix", "png")
-    ebsd_edges = canny.canny_img(ebsd_img, 36)
-    ebsd_edges = cv.cvtColor(ebsd_edges, cv.COLOR_BGR2GRAY)
-    ebsd_overlay = colored_threshold_overlay(ebsd_img, ebsd_edges, 127, [255, 0, 0])
-    img_to_file.img_to_file(ebsd_overlay, ebsd_scan, "overlay", "png")
-    zoomed = ebsd_overlay[70:135, 70:150]
-    img_to_file.img_to_file(zoomed, ebsd_scan, "zoomed_overlay", "png")
-    get_scale_length(ebsd_img_gray, 10)
+    # img_to_file.img_to_file(canny_array(ebsd_img, 3, 3, 3, 30), ebsd_scan, "matrix", "png")
+    # ebsd_edges = canny.canny_img(ebsd_img, 36)
+    # ebsd_edges = cv.cvtColor(ebsd_edges, cv.COLOR_BGR2GRAY)
+    # ebsd_overlay = colored_threshold_overlay(ebsd_img, ebsd_edges, 127, [255, 0, 0])
+    # img_to_file.img_to_file(ebsd_overlay, ebsd_scan, "overlay", "png")
+    # zoomed = ebsd_overlay[70:135, 70:150]
+    # img_to_file.img_to_file(zoomed, ebsd_scan, "zoomed_overlay", "png")
+    # get_scale_length(ebsd_img_gray, 10)
+    weighted_edges = find_melt_pool_boundaries.threshold_weighted_edges(ebsd_img)
+    print(type(weighted_edges))
+    cv.imshow("map", find_melt_pool_boundaries.melt_pool_boundaries(weighted_edges, 50))
+    cv.waitKey()
