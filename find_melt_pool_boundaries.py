@@ -34,46 +34,50 @@ def melt_pool_boundaries(weighted_edges, min_area):
     # Loop until we get to a pixel that is not an edge and also not already attributed to a melt pool.
     for i in range(len(weighted_edges)):
         for j in range(len(weighted_edges[i])):
+            print("Seed point: (" + str(i) + ", " + str(j) + ")")
             if weighted_edges[i][j] > 0 or img_out[i][j][0] > 0:
                 continue
             thresh = 0
             pixel_count = 1
-            # Array of pixels, specified as tuples, that belong in this particular melt pool
-            pixels = [(i, j)]
+            # Array of pixels that belong in this particular melt pool
+            pixels = [[i, j]]
             # Expand the melt pool until it is above the minimum area bound
-            while pixel_count < min_area:
-                # Raising threshold
+            # Raising threshold
+            # Expand until the area under the current threshold is filled
+            space = True
+            while space and pixel_count < min_area:
                 thresh = thresh + 1
-                # Expand until the area under the current threshold is filled
-                space = True
-                while space:
-                    # Temporary copy of current melt pool pixels to avoid looping issues
-                    pixels_ = pixels.copy()
-                    # Assume there is no more space
-                    space = False
-                    for pixel in pixels_:
-                        # Try to expand into the 3 x 3 square around each pixel
-                        for m in range(-1, 2):
-                            for n in range(-1, 2):
-                                # Continue if the pixel is out of bounds
-                                if pixel[0] + m < 0 or pixel[0] + m >= len(weighted_edges) or pixel[1] + n < 0 or pixel[1] + n >= len(weighted_edges[0]):
-                                    continue
-                                # Continue if the neighbouring pixel is already in this melt pool
-                                if (pixel[0]+m, pixel[1]+n) in pixels:
-                                    continue
-                                # Continue if the neighbouring pixel is already attributed to another melt pool
-                                if img_out[pixel[0]+m][pixel[1]+n][0] > 0:
-                                    continue
-                                # Continue if the neighbouring pixel is an edge that is greater than the threshold
-                                if weighted_edges[pixel[0]+m][pixel[1]+n] > thresh:
-                                    continue
-                                # Attribute the neighbouring pixel to this melt pool
-                                pixels.append((pixel[0]+m, pixel[1]+n))
-                                pixel_count = pixel_count + 1
-                                # There was space for another pixel
-                                space = True
+                print(pixels)
+                # Temporary copy of current melt pool pixels to avoid looping issues
+                pixels_ = pixels.copy()
+                # Assume there is no more space
+                space = False
+                for pixel in pixels_:
+                    # Try to expand into the 3 x 3 square around each pixel
+                    for m in range(-1, 2):
+                        for n in range(-1, 2):
+                            # Continue if the pixel is out of bounds
+                            if pixel[0] + m < 0 or pixel[0] + m > len(weighted_edges) - 1 or pixel[1] + n < 0 or pixel[1] + n > len(weighted_edges[0]) - 1:
+                                continue
+                            # Continue if the neighbouring pixel is already in this melt pool
+                            if [pixel[0]+m, pixel[1]+n] in pixels:
+                                continue
+                            # Continue if the neighbouring pixel is already attributed to another melt pool
+                            if img_out[pixel[0]+m][pixel[1]+n][0] > 0:
+                                continue
+                            # Continue if the neighbouring pixel is an edge that is greater than the threshold
+                            if weighted_edges[pixel[0]+m][pixel[1]+n] > thresh:
+                                continue
+                            # Attribute the neighbouring pixel to this melt pool
+                            pixels.append([pixel[0]+m, pixel[1]+n])
+                            pixel_count = pixel_count + 1
+                            # There was space for another pixel
+                            space = True
+                if not space:
+                    print("No room to expand")
 
             # Colour the melt pool area that was found
+            print("Isolating Melt Pool at Threshold " + str(thresh))
             for pixel in pixels:
                 img_out[pixel[0]][pixel[1]] = colouring[colour]
             # Switch to next colour
