@@ -44,37 +44,55 @@ def melt_pool_boundaries(weighted_edges, min_area):
             # Expand the melt pool until it is above the minimum area bound
             # Raising threshold
             # Expand until the area under the current threshold is filled
-            space = True
-            while space and pixel_count < min_area:
+            while pixel_count < min_area:
+                print(pixel_count)
                 thresh = thresh + 1
-                print(pixels)
-                # Temporary copy of current melt pool pixels to avoid looping issues
-                pixels_ = pixels.copy()
-                # Assume there is no more space
-                space = False
-                for pixel in pixels_:
-                    # Try to expand into the 3 x 3 square around each pixel
-                    for m in range(-1, 2):
-                        for n in range(-1, 2):
-                            # Continue if the pixel is out of bounds
-                            if pixel[0] + m < 0 or pixel[0] + m > len(weighted_edges) - 1 or pixel[1] + n < 0 or pixel[1] + n > len(weighted_edges[0]) - 1:
-                                continue
-                            # Continue if the neighbouring pixel is already in this melt pool
-                            if [pixel[0]+m, pixel[1]+n] in pixels:
-                                continue
-                            # Continue if the neighbouring pixel is already attributed to another melt pool
-                            if img_out[pixel[0]+m][pixel[1]+n][0] > 0:
-                                continue
-                            # Continue if the neighbouring pixel is an edge that is greater than the threshold
-                            if weighted_edges[pixel[0]+m][pixel[1]+n] > thresh:
-                                continue
-                            # Attribute the neighbouring pixel to this melt pool
-                            pixels.append([pixel[0]+m, pixel[1]+n])
-                            pixel_count = pixel_count + 1
-                            # There was space for another pixel
-                            space = True
-                if not space:
-                    print("No room to expand")
+                space = True
+                space_loop = 0
+                while space:
+                    print(pixels)
+                    space_loop = space_loop + 1
+                    print("Space Loop " + str(space_loop))
+                    # Temporary copy of current melt pool pixels to avoid looping issues
+                    pixels_ = pixels.copy()
+                    # Assume there is no more space
+                    space = False
+                    for pixel in pixels_:
+                        # Try to expand into the 3 x 3 square around each pixel
+                        for m in range(-1, 2):
+                            for n in range(-1, 2):
+                                # Continue if the pixel is out of bounds
+                                if pixel[0] + m < 0 or pixel[0] + m > len(weighted_edges) - 1 or pixel[1] + n < 0 or pixel[1] + n > len(weighted_edges[0]) - 1:
+                                    continue
+                                # Continue if the neighbouring pixel is already in this melt pool
+                                if [pixel[0]+m, pixel[1]+n] in pixels:
+                                    continue
+                                # Continue if the neighbouring pixel is already attributed to another melt pool
+                                if img_out[pixel[0]+m][pixel[1]+n][0] > 0:
+                                    continue
+                                # Continue if the neighbouring pixel is an edge that is greater than the threshold
+                                if weighted_edges[pixel[0]+m][pixel[1]+n] > thresh:
+                                    continue
+                                # Attribute the neighbouring pixel to this melt pool
+                                pixels.append([pixel[0]+m, pixel[1]+n])
+                                pixel_count = pixel_count + 1
+                                # There was space for another pixel
+                                space = True
+                    if not space:
+                        print("No room to expand")
+                    # Check if the area centroid of the melt pool is still within the melt pool.
+                    # If it is not then this indicates the melt pool has taken on an excessively concave shape and the
+                    # threshold should be incremented.
+                    x_sum = 0
+                    y_sum = 0
+                    for pixel in pixels:
+                        x_sum = x_sum + pixel[0]
+                        y_sum = y_sum + pixel[1]
+                    x_centroid = int(x_sum/pixel_count)
+                    y_centroid = int(y_sum/pixel_count)
+                    if not([x_centroid, y_centroid] in pixels):
+                        print("Melt pool centroid not within melt pool")
+                        break
 
             # Colour the melt pool area that was found
             print("Isolating Melt Pool at Threshold " + str(thresh))
