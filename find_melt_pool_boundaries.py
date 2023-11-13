@@ -22,7 +22,7 @@ def threshold_weighted_edges(img):
     return img_out
 
 
-def melt_pool_boundaries(weighted_edges, min_area):
+def melt_pool_boundaries(weighted_edges, min_area, max_area):
     # Colors of the melt pools. B channel is always non-zero for sake of algorithm below
     colouring = [[255, 0, 0], [1, 255, 0], [1, 0, 255], [255, 255, 0]]
     colour = 0
@@ -45,8 +45,10 @@ def melt_pool_boundaries(weighted_edges, min_area):
             # Raising threshold
             # Expand until the area under the current threshold is filled
             while pixel_count < min_area:
-                print(pixel_count)
                 thresh = thresh + 1
+                if thresh > 100:
+                    break
+                print("Counted " + str(pixel_count) + " pixels at threshold of " + str(thresh))
                 space = True
                 space_loop = 0
                 while space:
@@ -80,6 +82,9 @@ def melt_pool_boundaries(weighted_edges, min_area):
                                 space = True
                     if not space:
                         print("No room to expand")
+                    if pixel_count > max_area:
+                        break
+
                     # Check if the area centroid of the melt pool is still within the melt pool.
                     # If it is not then this indicates the melt pool has taken on an excessively concave shape and the
                     # threshold should be incremented.

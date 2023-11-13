@@ -80,6 +80,8 @@ def get_scale_length(img, thresh):
 if __name__ == '__main__':
     ebsd_scan = "images\\A.tif"
     ebsd_img = cv.imread(ebsd_scan, cv.IMREAD_COLOR)
+    ebsd_img = ebsd_img[25:225, :]
+    img_to_file.img_to_file(ebsd_img, ebsd_scan, "cropped", "png")
     ebsd_img_gray = cv.cvtColor(ebsd_img, cv.COLOR_BGR2GRAY)
     # img_to_file.img_to_file(ebsd_img, ebsd_scan, "", "png")
     # img_to_file.img_to_file(canny_array(ebsd_img, 3, 3, 3, 30), ebsd_scan, "matrix", "png")
@@ -92,5 +94,5 @@ if __name__ == '__main__':
     # get_scale_length(ebsd_img_gray, 10)
     weighted_edges = find_melt_pool_boundaries.threshold_weighted_edges(ebsd_img)
     img_to_file.img_to_file(weighted_edges, ebsd_scan, "weighted_edges", "png")
-    cv.imshow("map", find_melt_pool_boundaries.melt_pool_boundaries(weighted_edges, 50))
+    cv.imshow("map", find_melt_pool_boundaries.melt_pool_boundaries(weighted_edges, 50, 100))
     cv.waitKey()
