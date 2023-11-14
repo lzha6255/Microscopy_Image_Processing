@@ -1,6 +1,7 @@
 import cv2 as cv
 
 import canny
+import Melt_Region
 
 
 def threshold_weighted_edges(img):
@@ -24,31 +25,40 @@ def threshold_weighted_edges(img):
 
 def melt_pool_boundaries(weighted_edges, min_area, max_area):
     # Colors of the melt pools. B channel is always non-zero for sake of algorithm below
-    colouring = [[255, 0, 0], [1, 255, 0], [1, 0, 255], [255, 255, 0]]
-    colour = 0
+    n_colours = 5
+    colouring = [[255, 0, 0], [1, 255, 0], [1, 0, 255], [255, 255, 0], [255, 0, 255]]
+    regions = []        # Graph of melt pool regions for distinct colouring
+    region_id = -1
+    # 2D array corresponding to each pixel. Stores the region to which the pixel is attributed to
+    region_map = weighted_edges.copy()
     img_out = weighted_edges.copy()
     for i in range(len(weighted_edges)):
         for j in range(len(weighted_edges[i])):
             img_out[i][j] = 0
+            region_map[i][j] = -1   # -1 indicates pixel has not been attributed to a melt pool/region
     img_out = cv.cvtColor(img_out, cv.COLOR_GRAY2BGR)
     # Loop until we get to a pixel that is not an edge and also not already attributed to a melt pool.
     for i in range(len(weighted_edges)):
         for j in range(len(weighted_edges[i])):
-            print("Seed point: (" + str(i) + ", " + str(j) + ")")
             if weighted_edges[i][j] > 0 or img_out[i][j][0] > 0:
                 continue
+            print("Seed point: (" + str(i) + ", " + str(j) + ")")
             thresh = 0
             pixel_count = 1
             # Array of pixels that belong in this particular melt pool
             pixels = [[i, j]]
-            # Expand the melt pool until it is above the minimum area bound
-            # Raising threshold
-            # Expand until the area under the current threshold is filled
+            # Add the melt region to the graph
+            regions.append(Melt_Region.MeltRegion(region_id, n_colours))
+            region_id = region_id + 1
+            # Expand the melt pool until it is above the minimum area
             while pixel_count < min_area:
+                # Raising edge crossing threshold
                 thresh = thresh + 1
+                # Stop if edge crossing threshold reaches 100 but melt pool area is still not above minimum
                 if thresh > 100:
                     break
                 print("Counted " + str(pixel_count) + " pixels at threshold of " + str(thresh))
+                # Fill the area reachable within the current edge crossing threshold
                 space = True
                 space_loop = 0
                 while space:
@@ -69,8 +79,15 @@ def melt_pool_boundaries(weighted_edges, min_area, max_area):
                                 # Continue if the neighbouring pixel is already in this melt pool
                                 if [pixel[0]+m, pixel[1]+n] in pixels:
                                     continue
-                                # Continue if the neighbouring pixel is already attributed to another melt pool
+                                # Continue if the neighbouring pixel is already attributed to another melt pool.
+                                # Also add the connection to the graph of melt regions if it is not already connected
                                 if img_out[pixel[0]+m][pixel[1]+n][0] > 0:
+                                    connected_region = region_map[pixel[0]+m][pixel[1]+n]
+                                    if regions[region_id].check_connectivity(connected_region):
+                                        continue
+                                    # Form a two-way connection between the two regions
+                                    regions[region_id].add_connection(regions[connected_region])
+                                    regions[connected_region].add_connection(regions[region_id])
                                     continue
                                 # Continue if the neighbouring pixel is an edge that is greater than the threshold
                                 if weighted_edges[pixel[0]+m][pixel[1]+n] > thresh:
@@ -101,8 +118,12 @@ def melt_pool_boundaries(weighted_edges, min_area, max_area):
 
             # Colour the melt pool area that was found
             print("Isolating Melt Pool at Threshold " + str(thresh))
+            print(region_id)
             for pixel in pixels:
+                # Label pixels as belonging to this region
+                region_map[pixel[0]][pixel[1]] = region_id
+                regions[region_id].set_colour()
+                colour = regions[region_id].get_colour_id()
                 img_out[pixel[0]][pixel[1]] = colouring[colour]
-            # Switch to next colour
-            colour = (colour + 1) % len(colouring)
+
     return img_out
