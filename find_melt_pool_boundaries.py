@@ -118,12 +118,24 @@ def melt_pool_boundaries(weighted_edges, min_area, max_area):
 
             # Colour the melt pool area that was found
             print("Isolating Melt Pool at Threshold " + str(thresh))
-            print(region_id)
+            print("Region ID: " + str(region_id))
             for pixel in pixels:
                 # Label pixels as belonging to this region
                 region_map[pixel[0]][pixel[1]] = region_id
                 regions[region_id].set_colour()
                 colour = regions[region_id].get_colour_id()
                 img_out[pixel[0]][pixel[1]] = colouring[colour]
+            regions[region_id].set_pixels(pixels)
 
+    n_melt_regions = len(regions)
+    avg_melt_pool_area = 0
+    avg_connectivity = 0
+    for region in regions:
+        avg_melt_pool_area = avg_melt_pool_area + region.get_n_pixels()
+        avg_connectivity = avg_connectivity + region.get_connectivity()
+    avg_melt_pool_area = avg_melt_pool_area / n_melt_regions
+    avg_connectivity = avg_connectivity / n_melt_regions
+    print("Melt Regions Identified: " + str(n_melt_regions))
+    print("Average Melt Pool Area (Pixels): " + str(avg_melt_pool_area))
+    print("Average Connectivity: " + str(avg_connectivity))
     return img_out

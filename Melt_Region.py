@@ -4,6 +4,7 @@ class MeltRegion:
         self.colour_id = 0              # Indicator for colouring of the melt region
         self.n_colours = n_colours
         self.connections = []           # Array of connected melt regions
+        self.pixels = []                # Pixels over which this melt region exists
 
     def get_colour_id(self):
         return self.colour_id
@@ -11,8 +12,19 @@ class MeltRegion:
     def get_id(self):
         return self.id
 
+    def get_n_pixels(self):
+        return len(self.pixels)
+
+    def get_connectivity(self):
+        return len(self.connections)
+
     def add_connection(self, melt_region):
         self.connections.append(melt_region)
+
+    def set_pixels(self, pixels):
+        # Deep copy
+        for pixel in pixels:
+            self.pixels.append(pixel.copy())
 
     # Goes through connected regions and sets colour_id to be different from each connected region.
     # This is possible by the four colour theorem
