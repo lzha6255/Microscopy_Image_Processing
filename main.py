@@ -94,5 +94,5 @@ if __name__ == '__main__':
     # get_scale_length(ebsd_img_gray, 10)
     weighted_edges = find_melt_pool_boundaries.threshold_weighted_edges(ebsd_img)
     img_to_file.img_to_file(weighted_edges, ebsd_scan, "weighted_edges", "png")
-    cv.imshow("map", find_melt_pool_boundaries.melt_pool_boundaries(weighted_edges, 50, 100))
-    cv.waitKey()
+    boundaries = find_melt_pool_boundaries.melt_pool_boundaries(weighted_edges, 600, 300)
+    img_to_file.img_to_file(boundaries, ebsd_scan, "size_600_space_300", "png")

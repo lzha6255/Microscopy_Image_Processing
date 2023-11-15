@@ -1,5 +1,7 @@
 import cv2 as cv
 
+"""Write an image to file with filename name_suffix.file_type"""
+
 
 def img_to_file(img, name, suffix, file_type):
     file_address = ""

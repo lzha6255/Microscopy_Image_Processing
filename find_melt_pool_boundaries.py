@@ -23,7 +23,7 @@ def threshold_weighted_edges(img):
     return img_out
 
 
-def melt_pool_boundaries(weighted_edges, min_area, max_area):
+def melt_pool_boundaries(weighted_edges, min_area, space_threshold):
     # Colors of the melt pools. B channel is always non-zero for sake of algorithm below
     n_colours = 5
     colouring = [[255, 0, 0], [1, 255, 0], [1, 0, 255], [255, 255, 0], [255, 0, 255]]
@@ -61,6 +61,7 @@ def melt_pool_boundaries(weighted_edges, min_area, max_area):
                 # Fill the area reachable within the current edge crossing threshold
                 space = True
                 space_loop = 0
+                space_filled_px = 0
                 while space:
                     print(pixels)
                     space_loop = space_loop + 1
@@ -83,11 +84,10 @@ def melt_pool_boundaries(weighted_edges, min_area, max_area):
                                 # Also add the connection to the graph of melt regions if it is not already connected
                                 if img_out[pixel[0]+m][pixel[1]+n][0] > 0:
                                     connected_region = region_map[pixel[0]+m][pixel[1]+n]
-                                    if regions[region_id].check_connectivity(connected_region):
-                                        continue
-                                    # Form a two-way connection between the two regions
-                                    regions[region_id].add_connection(regions[connected_region])
-                                    regions[connected_region].add_connection(regions[region_id])
+                                    if not(regions[region_id].check_connectivity(connected_region)):
+                                        # Form a two-way connection between the two regions
+                                        regions[region_id].add_connection(regions[connected_region])
+                                        regions[connected_region].add_connection(regions[region_id])
                                     continue
                                 # Continue if the neighbouring pixel is an edge that is greater than the threshold
                                 if weighted_edges[pixel[0]+m][pixel[1]+n] > thresh:
@@ -95,11 +95,12 @@ def melt_pool_boundaries(weighted_edges, min_area, max_area):
                                 # Attribute the neighbouring pixel to this melt pool
                                 pixels.append([pixel[0]+m, pixel[1]+n])
                                 pixel_count = pixel_count + 1
+                                space_filled_px = space_filled_px + 1
                                 # There was space for another pixel
                                 space = True
                     if not space:
                         print("No room to expand")
-                    if pixel_count > max_area:
+                    if space_filled_px > space_threshold:
                         break
 
                     # Check if the area centroid of the melt pool is still within the melt pool.

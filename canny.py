@@ -3,6 +3,12 @@ import cv2 as cv
 import img_to_file
 
 
+"""Write image to file with Canny Edge Detector run on it with low_threshold.
+
+max_threshold set to 3*low_threshold
+"""
+
+
 def canny(filename, low_threshold):
     window_name = "Canny edge detection on " + filename
     ratio = 3
@@ -23,6 +29,12 @@ def canny(filename, low_threshold):
     img_to_file.img_to_file(dst, filename, "canny", "png")
 
     return dst
+
+
+"""Return image as array with Canny Edge Detector run on it with low_threshold.
+
+max_threshold set to 3*low_threshold
+"""
 
 
 def canny_img(img, low_threshold):

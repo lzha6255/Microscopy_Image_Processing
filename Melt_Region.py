@@ -1,6 +1,17 @@
+"""Object Representing a particular melt region.
+Fields:
+    - id: A unique identifier for the melt region.
+    - colour_id: An identifier for what colour the melt region should be coloured in. Takes on values in
+    [0, n_colours-1].
+    - n_colours: Number of colours available.
+    - connections: Array of references to other connected melt regions. Melt regions can form a graph.
+    - pixels: Array of arrays of length two indicating which image pixels belong to the melt region.
+"""
+
+
 class MeltRegion:
-    def __init__(self, id, n_colours):
-        self.id = id
+    def __init__(self, region_id, n_colours):
+        self.id = region_id
         self.colour_id = 0              # Indicator for colouring of the melt region
         self.n_colours = n_colours
         self.connections = []           # Array of connected melt regions
@@ -49,8 +60,8 @@ class MeltRegion:
             print("Could not make a distinct colouring for region " + str(self.id))
 
     # Checks if this melt region is connected to one with a particular id
-    def check_connectivity(self, id):
+    def check_connectivity(self, region_id):
         for connection in self.connections:
-            if id == connection.get_id():
+            if region_id == connection.get_id():
                 return True
         return False
